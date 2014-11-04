@@ -1,0 +1,9 @@
+name = Islandora More Metadata XML Forms
+description = Allows multiple metadata xml form as ingest steps.
+dependencies[] = islandora
+dependencies[] = islandora_basic_collection
+dependencies[] = xml_forms
+package = Islandora Tools
+version = 7.x-dev
+core = 7.x
+
