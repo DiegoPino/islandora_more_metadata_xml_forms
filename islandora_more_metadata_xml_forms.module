@@ -3,7 +3,9 @@
 /**
  * @file
  * More Metadata XML Forms base module.
- */
+ * This module enables other solution packs to programaticly use multiple XML forms as Ingest steps, even forms defined by other modules.
+ * Diego Pino N , Oct 2014
+*/
 
 
 /**
@@ -16,8 +18,8 @@
 	 $select_association_form_step = !empty($steps['xml_form_builder_association_step']);
 	 $step_storage = &islandora_ingest_form_get_step_storage($form_state, 'xml_form_builder_association_step');
      if ($select_association_form_step) {
- 		//Means XML_form_builder is trying to give us a choice which metadataform we want to use
- 		//In case we already defined one of this Forms in our ingestion steps we must deactivate this options to avoid duplicates
+ 		//Means XML_form_builder is trying to give us a choice which XML metadataform we want to use
+ 		//In case we already defined one of this Forms in our ingestion steps hook, we must deactivate this options to avoid duplicates
 		//or at least remove the already present as additional ingest step 
 		//First we iterate over those steps who have an ['args'] key. If present, Those are the additional metadatasteps.
 		$form_steps = islandora_ingest_form_get_form_steps($form_state); //Filter the ingest steps to only steps of type 'form'.
@@ -30,12 +32,17 @@
 		
 	   		 $form_steps_args= array_filter($form_steps, $form_step_filter_onlywith_args);
 			 $removeKeys=array('xml_form_builder_association_step','xml_form_builder_metadata_step');
-			 $user_steps_args=array_diff_key($form_steps_args, array_flip($removeKeys));//Lets keep only those forms defined as ingest_steps by the user that have and args argument
+			 $user_steps_args=array_diff_key($form_steps_args, array_flip($removeKeys));//Lets keep only those forms defined as ingest_steps by the user that have args argument
+			
 			 foreach($form_steps_args['xml_form_builder_association_step']['args'][0] as $forms => &$formargs)//Interate over the association_step args
 				{
 				foreach($user_steps_args as $userFormStep => $userFormStepDef)
 					{
-					if ($formargs['id']==$userFormStepDef['args'][0]['id'])
+						
+					$currentkey=key($userFormStepDef['args']);//We don't know the array key right now and are assuming the user correctly passed only one arg array. 
+					//It should be the same as 'form id', but we will trust and get 'id' parameter: means inside args['form_id']['id'] anyway to be sure
+					
+					if ($formargs['id']==$userFormStepDef['args'][$currentkey]['id']) //if the custom step form id equals to the defined in association the unset this as choice
 						{
 						unset($form_steps_args['xml_form_builder_association_step']['args'][0][$forms]);	
 						}
@@ -66,7 +73,8 @@ function islandora_more_metadata_xml_forms_form_xml_form_builder_edit_datastream
 	 
 	 foreach($other_steps as $step=>$values)
 	 	{
-	 	   if ($values['args'][0]['id']==$form_state['association']['id'])
+	 	   $currentkey=key($values['args']);
+		   if ($values['args'][$currentkey]['id']==$form_state['association']['id'])
 		   	 {
 				 form_load_include($form_state, 'inc', 'islandora_more_metadata_xml_forms', 'includes/ingest.form');
 				 form_load_include($form_state, 'inc', 'islandora_more_metadata_xml_forms', 'includes/datastream.form');
