@@ -15,13 +15,13 @@
  * @param array $form_state
  *   The Drupal form state.
  * @param array $association
- *   The form association.
+ *   The form association. Full argument array as returned by 
  *
  * @return array
  *   A drupal form definition.
  */
 function islandora_more_metadata_xml_forms_additional_ingest_form(array $form, array &$form_state, array $association) {
-  form_load_include($form_state, 'inc', 'islandora_more_metadata_xml_forms', 'ingest.form'); //Not needed, main ingest.inc is/should already adding this
+  form_load_include($form_state, 'inc', 'islandora_more_metadata_xml_forms', 'ingest.form'); //Not needed?, main ingest.inc is/should already adding this
   $step_storage = &islandora_ingest_form_get_step_storage($form_state, islandora_ingest_form_get_current_step_id($form_state));
   $step_storage['association'] = $association;
   $form_name = $association['form_name'];
@@ -37,9 +37,10 @@ function islandora_more_metadata_xml_forms_additional_ingest_form(array $form, a
 /**
  * Alter the form such that previous will unset any stored form.
  */
-function islandora_more_metadata_xml_forms_additional_ingest_form_alter(array &$form, array &$form_state, $form_id) {
+function islandora_more_metadata_xml_forms_form_islandora_more_metadata_xml_forms_additional_ingest_form_alter(array &$form, array &$form_state, $form_id) {
   if (isset($form['prev']['#submit'])) {
     array_unshift($form['prev']['#submit'], 'islandora_more_metadata_xml_forms_additional_ingest_form_previous_submit');
+	
   }
 }
 
@@ -47,9 +48,10 @@ function islandora_more_metadata_xml_forms_additional_ingest_form_alter(array &$
  * Unset the form storage.
  */
 
-function islandora_more_metadata_xml_forms_ingest_form_previous_submit(array $form, array &$form_state) {
+function islandora_more_metadata_xml_forms_additional_ingest_form_previous_submit(array $form, array &$form_state) {
   unset($form_state['storage'][FormStorage::STORAGE_ROOT]);
   $step_storage = &islandora_ingest_form_get_step_storage($form_state, islandora_ingest_form_get_current_step_id($form_state));
+  unset($step_storage['values']);
 }
 
 /**
