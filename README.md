@@ -29,27 +29,28 @@ There is no configuration to activate this Module. By default this module leaves
 
 ## How To use in a Solution Pack
 1. Define your new XML forms as usual using 
-```
-hook_islandora_xml_form_builder_forms()
-```
+  ```
+  hook_islandora_xml_form_builder_forms()
+  ```
 2. Associate your defined XML forms to a Content Model an DSID (datstream ID) using:
-```
-hook_islandora_content_model_forms_form_associations() //deprecated!
-```
+  ```
+  hook_islandora_content_model_forms_form_associations() //deprecated!
+  ```
 Or
-```
-hook_islandora_xml_form_builder_forms().
-```
+  ```
+  hook_islandora_xml_form_builder_forms().
+  ```
 
 And remember. At least one of this forms will act as primary metadata ingest step. This one will be responsible for generating the XSLT transform to DC and setting the objects title. **This form should NOT be used as an additional XML form ingest step.
+
 3. Now the important part: in your ingest steps hook define you extra XML forms (hook_CMODEL_PID_islandora_ingest_steps())
 For this example ("islandora_mymodule"=module name, "islandora_customCModel"= a defined CMODEL in the form of islandora:customCModel:
-```php
-function islandora_mymodule_islandora_customCModel_islandora_ingest_steps(array $form_state) {
+  ```php
+  function islandora_mymodule_islandora_customCModel_islandora_ingest_steps(array $form_state) {
   //First we need to fetch the XML forms we want to use:
   // There are two options: 
-  // 1.- writing and args array by hand for every XML form we wan't use in this form:
-  /*
+  /* A. writing and args array by hand for every XML form we wan't use in this form:
+  
   array('id_of_form_as_defined_in_current_module' =>
 
       'content_model' => 'islandora:customCModel',
@@ -61,14 +62,15 @@ function islandora_mymodule_islandora_customCModel_islandora_ingest_steps(array 
       'template' => FALSE,
 
        'id'=> 'id_of_form_as_defined_in_current_module',	
-	  );
-/*
-  // 2.- Get them using this function call (once for every xml form):
-  /*xml_form_builder_get_hook_associations($forms, $models, $dsids, $only_enabled));
+	  ); 
+  
+  B. Get them using this function call (once for every xml form):
+  xml_form_builder_get_hook_associations($forms, $models, $dsids, $only_enabled));
   */
 
  $arg1=xml_form_builder_get_hook_associations(array('Real Form Name'), array('islandora:customCModel'), array('notprimanay_DATASTREAM_ID'), true));
  $arg2=xml_form_builder_get_hook_associations(array('Real Form Name'), array('islandora:customCModel'), array('secondary_DATASTREAM_ID'), true));
+  
   return array(
    'islandora_mymodule_extrametadata1' => 
     //First extra XML Metadata Form
@@ -99,8 +101,8 @@ function islandora_mymodule_islandora_customCModel_islandora_ingest_steps(array 
     ),
   );
 }
-```
-4.- Debug and test. Quick explanation: If you associate three (3) XML forms to an particular CMODEL and then use one of this in an ingest step, this module will remove (this) the last one from the "XML form Choice Module". If you use two of them, then the Choice Form will be fully removed and the one defined in the module, but absent as Ingest step will be used as primary metadata.
+  ```
+4. Debug and test. Quick explanation: If you associate three (3) XML forms to an particular CMODEL and then use one of this in an ingest step, this module will remove (this) the last one from the "XML form Choice Module". If you use two of them, then the "Choice Form" will be fully removed and the one defined in the module, but absent as Ingest step, will be used as primary metadata.
 
 ## FAQ
 Q. My XML Form used in an Ingest Step does not transform to DC.
