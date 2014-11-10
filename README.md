@@ -34,14 +34,19 @@ There is no configuration to activate this Module. By default this module leaves
 
 ## How To use in a Solution Pack
 1. Define your new XML forms as usual using 
-  ```
-  hook_islandora_xml_form_builder_forms()
-  ```
-2. Associate your defined XML forms to a Content Model an DSID (datstream ID) using:
-  ```
-  hook_islandora_content_model_forms_form_associations() //deprecated!
-  ```
-  Or
+
+	```php
+	hook_islandora_xml_form_builder_forms()	
+	```
+	
+2. Associate your defined XML forms to a Content Model and a DSID (datstream ID) using:
+  
+	```php
+	hook_islandora_content_model_forms_form_associations() //deprecated!
+	```
+  
+  or
+  
   ```
   hook_islandora_xml_form_builder_forms().
   ```
@@ -49,67 +54,67 @@ There is no configuration to activate this Module. By default this module leaves
   > And remember: At least one of this forms will act as primary metadata ingest step. This one will be responsible for generating the XSLT transform to DC and setting the objects title. **This form should NOT be used as an additional XML form ingest step**.
 
 3. Now the important part: in your ingest steps hook define you extra XML forms using    ```hook_CMODEL_PID_islandora_ingest_steps().```
-  > Note: in this example ("islandora_mymodule"=module name, "islandora_customCModel"= a defined CMODEL in the form of islandora:customCModel:
+  > Note: in this example ("islandora_mymodule"=your module name, "islandora_customCModel"= a defined CMODEL in the form of islandora:customCModel:
 
-First, decide which already associated forms you want to use and build and 'args' Array() to let this module use them. You have at least two ways of doing this:
-  * A. writing and 'args' Array() by hand for every XML form you wan't use:
-    ```php
-  $arg=array('id_of_form_as_defined_in_current_module' =>
-
+	First, decide which already associated forms you want to use and build and 'args' Array() to let this module use them. You have at least two ways of doing this:
+	
+  * Writing and 'args' Array() by hand for every XML form you wan't use:
+    
+	```php 	
+	$arg=array('id_of_form_as_defined_in_current_module' =>
     'content_model' => 'islandora:customCModel',
-
-    'form_name' => 'Real Form Name', 
-
-    'dsid' => 'secondary_DATASTREAM_ID',
-
-    'template' => FALSE,
-
-     'id'=> 'id_of_form_as_defined_in_current_module',    
-    ); 
-    ```
-  * B. Get them using this function call (once for every xml form):
-   ```xml_form_builder_get_hook_associations($forms, $models, $dsids, $only_enabled));```
-
-Example using (B) option here:
-  ```php
-function islandora_mymodule_islandora_customCModel_islandora_ingest_steps(array $form_state) {
+	'form_name' => 'Real Form Name', 
+	'dsid' => 'secondary_DATASTREAM_ID',
+	'template' => FALSE,
+	'id'=> 'id_of_form_as_defined_in_current_module',    
+	); 
+	```
+  * Get them using this function call (once for every xml form):
   
-$arg1=xml_form_builder_get_hook_associations(array('Real Form Name'), array('islandora:customCModel'), array('a_DATASTREAM_ID'), true);
-$arg2=xml_form_builder_get_hook_associations(array('Real Form Name2'), array('islandora:customCModel'), array('another_DATASTREAM_ID'), true);
-return array(
-   'islandora_mymodule_extrametadata1' => 
-    //First extra XML Metadata Form
-    array(
-      'weight' => 6,
-      'type' => 'form',
-      'form_id' => 'islandora_more_metadata_xml_forms_additional_ingest_form',
-      'module' => 'islandora_more_metadata_xml_forms',
-      'file' => 'includes/ingest.form.inc',
-      'args' => $arg1,
-    ),
-     //Second extra XML Metadata Form
-    'islandora_mymodule_extrametadata2' =>
-    array(
-      'weight' => 7,
-      'type' => 'form',
-      'form_id' => 'islandora_more_metadata_xml_forms_additional_ingest_form',
-      'module' => 'islandora_more_metadata_xml_forms',
-      'file' => 'includes/ingest.form.inc',
-      'args' => $arg2,
-    ),
-    //Other step, like and upload form
-    'islandora_mymodule_file_upload' => array(
-      'weight' => 10,
-      'type' => 'form',
-      'form_id' => 'islandora_entities_tn_upload_form', //reusing here an upload form from the great Islandora Entities Module
-      'module' => 'islandora_entities',
-      'file' => 'includes/tn_upload.form.inc',
-    ),
-  );
-  }
-```
+	```php 
+	xml_form_builder_get_hook_associations($forms, $models, $dsids, $only_enabled));
+	```
 
-4. Debug and test. Quick explanation: If you associate three (3) XML forms to an particular CMODEL and then use one of this in an ingest step, this module will remove (this) the last one from the "XML form Choice Module". If you use two of them, then the "Choice Form" will be fully removed and the one defined in the module, but absent as Ingest step, will be used as primary metadata.
+	
+	####Example using (B) option here:
+  
+	```php
+	function islandora_mymodule_islandora_customCModel_islandora_ingest_steps(array $form_state) {  
+		$arg1=xml_form_builder_get_hook_associations(array('Real Form Name'), array('islandora:customCModel'), array('a_DATASTREAM_ID'), true);
+		$arg2=xml_form_builder_get_hook_associations(array('Real Form Name2'), array('islandora:customCModel'), array('another_DATASTREAM_ID'), true);
+		return array(
+	    //First extra XML Metadata Form
+		'islandora_mymodule_extrametadata1' => array(
+				'weight' => 6,
+				'type' => 'form',
+				'form_id' => 'islandora_more_metadata_xml_forms_additional_ingest_form',
+				'module' => 'islandora_more_metadata_xml_forms',
+				'file' => 'includes/ingest.form.inc',
+				'args' => $arg1,
+				),
+		//Second extra XML Metadata Form
+		'islandora_mymodule_extrametadata2' => array(
+					'weight' => 7,
+					'type' => 'form',
+					'form_id' => 'islandora_more_metadata_xml_forms_additional_ingest_form',
+					'module' => 'islandora_more_metadata_xml_forms',
+					'file' => 'includes/ingest.form.inc',
+					'args' => $arg2,
+					),
+		//Other step, like and upload form
+		'islandora_mymodule_file_upload' => array(
+						'weight' => 10,
+						'type' => 'form',
+						'form_id' => 'islandora_entities_tn_upload_form', //reusing here an upload Form from the great Islandora Entities Module
+						'module' => 'islandora_entities',
+						'file' => 'includes/tn_upload.form.inc',
+						),
+					);
+	}
+	```
+
+4. Debug and test. 
+	Quick explanation: If you associate three (3) XML forms to an particular CMODEL and then use one of this in an ingest step, this module will remove (this) the last one from the "XML form Choice Module". If you use two(2) of them, then the "Choice Form" will be fully removed and the one defined in the module, but absent as Ingest step, will be used as primary metadata.
 
 ## FAQ
 * Q. I installed the module and everything is working just as before.
