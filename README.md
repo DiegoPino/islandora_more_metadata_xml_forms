@@ -72,7 +72,7 @@ There is no configuration to activate this Module. By default this module leaves
   * Get them using this function call (once for every xml form):
   
 	```php 
-	xml_form_builder_get_hook_associations($forms, $models, $dsids, $only_enabled));
+	xml_form_builder_get_hook_associations($forms, $models, $dsids, $only_enabled);
 	```
 
 	
@@ -130,8 +130,9 @@ There is no configuration to activate this Module. By default this module leaves
   * A. 
     1. First step is to check if the 'args' array passed to islandora_more_metadata_xml_forms_additional_ingest_form is wellformed and the form referenced by this array really exist. I suggest debuging or using the recomended hook to get this array right. 
     2. Second Step is to make sure you have different DSID for every Ingest Step. It's obvious but does not hurt to check. If you define the same DSID for two consecutive steps, one will overwrite the next.
+	3. Third Step. Also check if your XML form is well written. Do this Form work without adding it to an ingest step?
 
-* Q. It seems a little slower when hitting back and next.
+* Q. It seems a (little) slower when hitting back and next.
   * A. True. Current implementation of Objective Forms has space for only one preprocessed XML form. So every time you hit back and forth, the XML form must be rebuild. Still thinking on how make my own caching there.
 
 
@@ -141,7 +142,6 @@ Still having problems or solved a problem? Write me (Diego Pino Navarro), or Che
 
 * [Islandora Group](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora)
 * [Islandora Dev Group](https://groups.google.com/forum/?hl=en&fromgroups#!forum/islandora-dev)
-* Note if you get error "XML form definition is not valid." during ingest you need to update your libxml2 version to 2.7+
 * Additional documentation on using XML Forms can be found [here](https://github.com/Islandora/islandora/wiki/Working-Programmatically-With-XML-Forms).
 
 
