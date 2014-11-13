@@ -17,46 +17,50 @@
     
 	 $select_association_form_step = !empty($steps['xml_form_builder_association_step']);
 	 $step_storage = &islandora_ingest_form_get_step_storage($form_state, 'xml_form_builder_association_step');
-     if ($select_association_form_step) {
- 		//Means XML_form_builder is trying to give us a choice which XML metadataform we want to use
+     if (($select_association_form_step)){
+ 		//Means XML_form_builder is there, and will eventually try to give us a choice which XML metadataform we want to use
  		//In case we already defined one of this Forms in our ingestion steps hook, we must deactivate this options to avoid duplicates
 		//or at least remove the already present as additional ingest step 
-		//First we iterate over those steps who have an ['args'] key. If present, Those are the additional metadatasteps.
+		//First we iterate over those steps who have an ['args'] key and are using our custom ingest form. If present, Those are the additional metadatasteps.
 		$form_steps = islandora_ingest_form_get_form_steps($form_state); //Filter the ingest steps to only steps of type 'form'.
-		if (count($form_steps) > 1)//If we get only one,then that form is for sure the metadata_ingest_step
+		
+		if (count($form_steps) > 1)//If we get only one,then that form is for sure the metadata_ingest_step or a collection ingest step
 			{
-			$form_step_filter_onlywith_args = function($o) 
+			$form_step_filter_onlyxmlforms_with_args = function($o) 
 				{
-	      	  	return array_key_exists('args' ,$o );
+				$isxmlformstep=array_key_exists('form_id',$o)? $o['form_id']==='islandora_more_metadata_xml_forms_additional_ingest_form' && array_key_exists('args',$o):false; //Keep only XML Forms used as Ingest Steps
+				
+	      	  	return $isxmlformstep;
 				};
 		
-	   		 $form_steps_args= array_filter($form_steps, $form_step_filter_onlywith_args);
-			 $removeKeys=array('xml_form_builder_association_step','xml_form_builder_metadata_step');
-			 $user_steps_args=array_diff_key($form_steps_args, array_flip($removeKeys));//Lets keep only those forms defined as ingest_steps by the user that have args argument
-			
-			 foreach($form_steps_args['xml_form_builder_association_step']['args'][0] as $forms => &$formargs)//Interate over the association_step args
-				{
-				foreach($user_steps_args as $userFormStep => $userFormStepDef)
+	   		 $form_steps_args= array_filter($form_steps, $form_step_filter_onlyxmlforms_with_args);
+			 if (count($form_steps_args)>0)
+			 	{
+				$removeKeys=array('xml_form_builder_association_step','xml_form_builder_metadata_step');
+			    $user_steps_args=array_diff_key($form_steps_args, array_flip($removeKeys));//Lets keep only those forms defined as ingest_steps by the user that have args argument
+               
+			    foreach($steps['xml_form_builder_association_step']['args'][0] as $forms => &$formargs)//Interate over the association_step args
 					{
-						
-					$currentkey=key($userFormStepDef['args']);//We don't know the array key right now and are assuming the user correctly passed only one arg array. 
-					//It should be the same as 'form id', but we will trust and get 'id' parameter: means inside args['form_id']['id'] anyway to be sure
-					
-					if ($formargs['id']==$userFormStepDef['args'][$currentkey]['id']) //if the custom step form id equals to the defined in association the unset this as choice
+					foreach($user_steps_args as $userFormStep => $userFormStepDef)
 						{
-						unset($form_steps_args['xml_form_builder_association_step']['args'][0][$forms]);	
-						}
-					}		
+						$currentkey=key($userFormStepDef['args']);//We don't know the array key right now and are assuming the user correctly passed only one arg array. 
+						//It should be the same as 'form id', but we will trust and get 'id' parameter: means inside args['form_id']['id'] anyway to be sure
+						if ($formargs['id']==$userFormStepDef['args'][$currentkey]['id']) //if the custom step form id equals to the defined in association the unset this as choice
+							{
+								unset($steps['xml_form_builder_association_step']['args'][0][$forms]);	
+							}
+						}		
 				
-				}
-				//Now $form_steps_args['xml_form_builder_association_step']['args'][0] has only those forms that are defined for this CMODEL but are not present as additional ingest steps.
+					}
+				//Now $steps['xml_form_builder_association_step']['args'][0] has only those forms that are defined for this CMODEL but are not present as additional ingest steps.
 				//Count how many we have
-		        if (count($form_steps_args['xml_form_builder_association_step']['args'][0])<=1)//If we have 1 or less then this form is not longer needed
+		        if (count($steps['xml_form_builder_association_step']['args'][0])<=1)//If we have 1 or less then this form is not longer needed
 					{
 						unset($steps['xml_form_builder_association_step']);
 					
 					}
 				}
+			}
 	   
         }
   }
